@@ -10,10 +10,6 @@ module.exports = {
     library: 'MyWidgetLibrary',
     libraryTarget: 'umd',
   },
-  loader: 'ts-loader',
-  options: {
-    configFile: 'tsconfig.build.json',
-  },
   module: {
     rules: [
       {

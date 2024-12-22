@@ -62,16 +62,6 @@
       "dom.iterable",
       "esnext"
     ],
-    "allowJs": true,
-    "noEmit": true,
-    "incremental": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
   },
   "include": [
     "src/**/*",
