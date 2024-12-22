@@ -47,7 +47,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "esnext",
-    "jsx": "preserve",
+    "jsx": "react",
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
