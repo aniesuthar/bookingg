@@ -34,15 +34,6 @@ const StepForm = ({ hospitalId }: { hospitalId: string }) => {
 
   const totalSteps = 5; // Total steps in your form
 
-  const handleNext = (data: Record<string, any>) => {
-    updateFormData(data);
-    nextStep();
-  };
-
-  const handlePrev = () => {
-    prevStep();
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Show confirmation on successful submission
@@ -53,23 +44,23 @@ const StepForm = ({ hospitalId }: { hospitalId: string }) => {
     switch (currentStep) {
       case 1:
         return (
-          <Step1 handleNext={handleNext} />
+          <Step1/>
         );
       case 2:
         return (
-          <Step2 handleNext={handleNext} handlePrev={handlePrev} />
+          <Step2 />
         );
       case 3:
         return (
-          <Step3 handleNext={handleNext} handlePrev={handlePrev} />
+          <Step3 />
         );
       case 4:
         return (
-          <Step4 handlePrev={handlePrev} handleSubmit={handleSubmit} />
+          <Step4 handleSubmit={handleSubmit} />
         );
       case 5: // Confirmation Step
         return (
-          <Step5 handlePrev={handlePrev} />
+          <Step5 />
         );
       default:
         return null;

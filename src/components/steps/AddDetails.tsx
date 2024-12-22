@@ -3,8 +3,8 @@ import React from 'react'
 import { useStepFormStore } from '@/lib/store';
 import { FormActionProps } from '../AppointmentBook';
 
-export default function AddDetails({handlePrev, handleSubmit}: FormActionProps) {
-    const {formData, updateFormData} = useStepFormStore();
+export default function AddDetails({handleSubmit}: FormActionProps) {
+    const {formData, prevStep, updateFormData} = useStepFormStore();
     return (
         <div className="flex flex-col p-6 rounded-lg space-y-4">
             <h2 className="text-2xl font-semibold ">Step 4: Add Details</h2>
@@ -57,7 +57,7 @@ export default function AddDetails({handlePrev, handleSubmit}: FormActionProps) 
                 <div className="mt-4 flex justify-between">
                     <button
                         className="py-2 px-4 bg-gray-300 text-gray-700 rounded-lg"
-                        onClick={handlePrev}
+                        onClick={prevStep}
                     >
                         Back
                     </button>

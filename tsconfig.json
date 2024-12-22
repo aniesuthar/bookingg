@@ -1,19 +1,57 @@
+// {
+//   "compilerOptions": {
+//     "target": "ES5", // Or ES6 if needed
+//     "module": "ESNext", // Allows Webpack to handle modules
+//     "jsx": "react-jsx", // Ensure JSX is correctly handled
+//     "strict": true, // Optional, for stricter type checking
+//     "esModuleInterop": true, // Recommended for compatibility
+//     "skipLibCheck": true, // Speeds up the build process
+//     "moduleResolution": "node",
+//     "allowSyntheticDefaultImports": true, // Allows default imports
+//     "plugins": [
+//       {
+//         "name": "next"
+//       }
+//     ],
+//     "paths": {
+//       "@/*": [
+//         "./src/*"
+//       ]
+//     },
+//     "lib": [
+//       "dom",
+//       "dom.iterable",
+//       "esnext"
+//     ],
+//     "allowJs": true,
+//     "incremental": true,
+//     "resolveJsonModule": true,
+//     "isolatedModules": true,
+//     "noEmit": true
+//   },
+//   "include": [
+//     "src/**/*",
+//     "next-env.d.ts",
+//     "**/*.ts",
+//     "**/*.tsx",
+//     ".next/types/**/*.ts",
+//     "next.config.js",
+//     "public/widget.js"
+//   ],
+//   "exclude": [
+//     "node_modules",
+//     "dist"
+//   ]
+// }
 {
   "compilerOptions": {
-    "target": "ES5", // Or ES6 if needed
-    "module": "ESNext", // Allows Webpack to handle modules
-    "jsx": "preserve", // Ensure JSX is correctly handled
-    "strict": true, // Optional, for stricter type checking
-    "esModuleInterop": true, // Recommended for compatibility
-    "skipLibCheck": true, // Speeds up the build process
+    "target": "es5",
+    "module": "esnext",
+    "jsx": "preserve",
+    "strict": true,
+    "esModuleInterop": true,
     "moduleResolution": "node",
-    "declaration": true, // Generates type definitions (optional)
-    "allowSyntheticDefaultImports": true, // Allows default imports
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "skipLibCheck": true,
     "paths": {
       "@/*": [
         "./src/*"
@@ -25,10 +63,15 @@
       "esnext"
     ],
     "allowJs": true,
+    "noEmit": true,
     "incremental": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "src/**/*",
@@ -40,7 +83,6 @@
     "public/widget.js"
   ],
   "exclude": [
-    "node_modules",
-    "dist"
+    "node_modules"
   ]
 }
