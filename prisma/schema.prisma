@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,69 +9,54 @@ datasource db {
 }
 
 model Vendor {
-  id                     String  @id @default(uuid())
-  pId                    Int     @unique @default(autoincrement())
-  name                   String
-  bio                    String
-  email                  String  @unique
-  phone                  String  @unique
-  phoneAlt               String
-  addressCity            String?
-  addressPinCode         Int?
-  addressState           String?
-  addressStreet          String?
-  aggregatedAppointments Int     @default(0)
-  aggregatedRating       Float   @default(4)
-  canUsePlatform         Boolean @default(true)
-  blockingReason         String?
-  coverPhoto             String?
-  logo                   String?
-  maxBookingWindow       Int?
-  minBookingWindow       Int?
-  googleMapUrl           String?
-  slug                   String
-  startYear              Int?
-  showBusinessDetails    Boolean @default(false)
-
-  // Relationships
+  id                      String                         @id @default(uuid()) @db.Uuid()
+  pId                     Int                            @unique @default(autoincrement())
+  name                    String
+  bio                     String
+  email                   String                         @unique
+  phone                   String                         @unique
+  phoneAlt                String?
+  addressCity             String?
+  addressPinCode          Int?
+  addressState            String?
+  addressStreet           String?
+  aggregatedAppointments  Int                            @default(0)
+  aggregatedRating        Float                          @default(4)
+  canUsePlatform          Boolean                        @default(true)
+  blockingReason          String?
+  coverPhoto              String?
+  logo                    String?
+  maxBookingWindow        Int?
+  minBookingWindow        Int?
+  googleMapUrl            String?
+  slug                    String
+  startYear               Int?
+  showBusinessDetails     Boolean                        @default(false)
+  createdAt               DateTime                       @default(now())
+  updatedAt               DateTime                       @updatedAt
   appointments            Appointment[]
-  vendorAdmins            VendorAdmin[]
-  notificationPreferences VendorNotificationPreference[]
-  payments                VendorPayment[]
   providers               Provider[]
-  services                Service[]
-  socialLinks             VendorSocialLink[]
   schedules               Schedule[]                     @relation("VendorSchedules")
+  services                Service[]
+  vendorAdmins            VendorAdmin[]
   bank                    VendorBank?
   design                  VendorDesign?
-
-  // Metadata
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-enum ScheduleType {
-  WEEKLY
-  FLEXIBLE
-}
-
-enum Channel {
-  WH
-  PH
-  EM
+  notificationPreferences VendorNotificationPreference[]
+  payments                VendorPayment[]
+  socialLinks             VendorSocialLink[]
 }
 
 model Schedule {
   id         Int          @id @default(autoincrement())
   type       ScheduleType
-  vendorId   String
-  providerId String?
-  vendor     Vendor       @relation("VendorSchedules", fields: [vendorId], references: [id])
-  provider   Provider?    @relation("ProviderSchedules", fields: [providerId], references: [id])
-  day        Day? // Nullable for flexible schedules
-  startDate  DateTime? // For flexible schedules
-  endDate    DateTime? // For flexible schedules
+  vendorId   String @db.Uuid
+  providerId String? @db.Uuid
+  day        Day?
+  startDate  DateTime?
+  endDate    DateTime?
   isHoliday  Boolean
+  provider   Provider?    @relation("ProviderSchedules", fields: [providerId], references: [id])
+  vendor     Vendor       @relation("VendorSchedules", fields: [vendorId], references: [id])
   slots      Slot[]
 
   @@index([vendorId, type, day])
@@ -94,23 +73,22 @@ model Slot {
 
 model VendorNotificationPreference {
   id       Int     @id @default(autoincrement())
-  vendorId String
-  vendor   Vendor  @relation(fields: [vendorId], references: [id])
-  // Additional fields for notification preferences
+  vendorId String @db.Uuid()
   channel  Channel
   isActive Boolean
   dest     String
+  vendor   Vendor  @relation(fields: [vendorId], references: [id])
 }
 
 model Appointment {
-  id                 String             @id @default(uuid()) // Unique identifier for each appointment
+  id                 String             @id @default(uuid()) @db.Uuid
   amount             Float
   bankRef            String
-  cancellationReason String? // Optional
+  cancellationReason String?
   createdAt          DateTime           @default(now())
   dateTime           DateTime
   easebuzzId         String
-  formFields         Json // JSON for flexible form fields
+  formFields         Json
   user_name          String
   user_age           Int
   user_gender        Gender
@@ -119,46 +97,46 @@ model Appointment {
   guestCount         Int
   isRescheduled      Boolean
   paymentStatus      String
-  pId                String // Reference to Provider (e.g., providerId)
-  providerId         String // Foreign key for Provider
-  provider           Provider           @relation(fields: [providerId], references: [id])
-  refund             AppointmentRefund? // Optional refund relation
+  pId                Int                @unique @default(autoincrement())
+  providerId         String @db.Uuid
   refundStatus       String
-  serviceId          String // Foreign key for Service
-  service            Service            @relation(fields: [serviceId], references: [id])
+  serviceId          String @db.Uuid
   status             String
-  transaction        Transaction?
   txnId              String
   updatedAt          DateTime           @updatedAt
-  userId             String // Foreign key for User
+  userId             String @db.Uuid
+  vendorId           String @db.Uuid
+  provider           Provider           @relation(fields: [providerId], references: [id])
+  service            Service            @relation(fields: [serviceId], references: [id])
   user               User               @relation(fields: [userId], references: [id])
-  vendorId           String // Foreign key for Vendor
   vendor             Vendor             @relation(fields: [vendorId], references: [id])
+  refund             AppointmentRefund?
+  transaction        Transaction?
 }
 
 model AppointmentRefund {
   id            Int         @id @default(autoincrement())
   amount        Float
   refundDate    DateTime
-  appointmentId String      @unique
+  appointmentId String      @unique @db.Uuid()
   appointment   Appointment @relation(fields: [appointmentId], references: [id])
 }
 
 model Service {
-  id               String        @id @default(uuid())
+  id               String        @id @default(uuid()) @db.Uuid
   name             String
-  appointments     Appointment[]
-  vendorId         String
-  Vendor           Vendor        @relation(fields: [vendorId], references: [id])
+  vendorId         String @db.Uuid
   appointmentPrice Int
   bookingPrice     Int
   description      String
   duration         Int
   image            String
   isActive         Boolean
-  providers        Provider[]
-  questions        Question[]
   pId              Int           @unique @default(autoincrement())
+  appointments     Appointment[]
+  questions        Question[]
+  Vendor           Vendor        @relation(fields: [vendorId], references: [id])
+  providers        Provider[]    @relation("ProviderToService")
 }
 
 model Question {
@@ -167,16 +145,15 @@ model Question {
   placeHolder String
   required    Boolean
   type        String
-  serviceId   String
+  serviceId   String @db.Uuid()
   service     Service @relation(fields: [serviceId], references: [id])
 }
 
 model Transaction {
-  id             String      @id @default(uuid())
+  id             String      @id @default(uuid()) @db.Uuid
   amount         Float
   date           DateTime
-  appointmentId  String      @unique
-  appointment    Appointment @relation(fields: [appointmentId], references: [id])
+  appointmentId  String      @unique  @db.Uuid
   bankRefNum     String
   cardType       String
   easepayid      String
@@ -186,17 +163,15 @@ model Transaction {
   netAmountDebit String
   status         String
   txnId          String
-  userId         String
+  userId         String @db.Uuid
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  appointment    Appointment @relation(fields: [appointmentId], references: [id])
   user           User        @relation(fields: [userId], references: [id])
-
-
-  // Metadata
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model User {
-  id           String        @id @default(uuid())
+  id           String        @id @default(uuid()) @db.Uuid
   name         String
   email        String        @unique
   phone        String        @unique
@@ -205,83 +180,87 @@ model User {
 }
 
 model VendorPayment {
-  id       String @id @default(uuid())
-  vendorId String
+  id       String @id @default(uuid()) @db.Uuid
+  vendorId String @db.Uuid
   vendor   Vendor @relation(fields: [vendorId], references: [id])
-  // Additional fields for payments
 }
 
 model Provider {
-  id                   String               @id @default(uuid())
-  vendorId             String
-  vendor               Vendor               @relation(fields: [vendorId], references: [id])
-  schedules            Schedule[]           @relation("ProviderSchedules")
-  appointments         Appointment[]
-  services             Service[]
-  name                 String
-  pId                  Int
-  scheduleDefaultHours String
-  slug                 String
-  specialties          ProviderSpeciality[]
-  aggregatedAppointments Int     @default(0)
-  aggregatedRating       Float   @default(4)  // Additional fields for provider
-
-
-  // Metadata
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                        String               @id @default(uuid()) @db.Uuid
+  vendorId                  String @db.Uuid
+  name                      String
+  pId                       Int                  @unique @default(autoincrement())
+  slug                      String
+  aggregatedAppointments    Int                  @default(0)
+  aggregatedRating          Float                @default(4)
+  createdAt                 DateTime             @default(now())
+  updatedAt                 DateTime             @updatedAt
+  scheduleDefaultHoursEnd   Int
+  scheduleDefaultHoursStart Int
+  appointments              Appointment[]
+  vendor                    Vendor               @relation(fields: [vendorId], references: [id])
+  specialties               ProviderSpeciality[]
+  schedules                 Schedule[]           @relation("ProviderSchedules")
+  services                  Service[]            @relation("ProviderToService")
 }
 
 model ProviderSpeciality {
   id         Int      @id @default(autoincrement())
-  providerId String
-  provider   Provider @relation(fields: [providerId], references: [id])
+  providerId String @db.Uuid
   title      String
+  provider   Provider @relation(fields: [providerId], references: [id])
 }
 
 model VendorSocialLink {
-  id       String          @id @default(uuid())
-  vendorId String
-  vendor   Vendor          @relation(fields: [vendorId], references: [id])
+  id       String          @id @default(uuid()) @db.Uuid
+  vendorId String @db.Uuid
   platform SocialPlatforms
   url      String
+  vendor   Vendor          @relation(fields: [vendorId], references: [id])
 
-  // Additional fields for social links
-  @@unique([platform, url]) // Composite unique constraint
+  @@unique([platform, url])
 }
 
 model VendorBank {
-  id            String @id @default(uuid())
-  vendorId      String @unique
-  vendor        Vendor @relation(fields: [vendorId], references: [id])
+  id            String @id @default(uuid()) @db.Uuid
+  vendorId      String @unique @db.Uuid
   accountNumber String
   bankName      String
   holderName    String
   ifsc          String
-  // Additional fields for bank details
+  vendor        Vendor @relation(fields: [vendorId], references: [id])
 }
 
 model VendorDesign {
-  id              String @id @default(uuid())
-  vendorId        String @unique
-  vendor          Vendor @relation(fields: [vendorId], references: [id])
+  id              String @id @default(uuid()) @db.Uuid
+  vendorId        String @unique @db.Uuid
   accentColor     String
   backgroundColor String
   font            String
   textColor       String
-  // Additional fields for design
+  vendor          Vendor @relation(fields: [vendorId], references: [id])
 }
 
 model VendorAdmin {
-  id             String  @id @default(uuid())
-  vendorId       String
-  vendor         Vendor  @relation(fields: [vendorId], references: [id])
+  id             String  @id @default(uuid()) @db.Uuid
+  vendorId       String @db.Uuid
   name           String
   email          String
   password       String  @default(uuid())
   isBlocked      Boolean @default(false)
   blockingReason String  @default("")
-  // Additional admin fields
+  vendor         Vendor  @relation(fields: [vendorId], references: [id])
+}
+
+enum ScheduleType {
+  WEEKLY
+  FLEXIBLE
+}
+
+enum Channel {
+  WH
+  PH
+  EM
 }
 
 enum Gender {
