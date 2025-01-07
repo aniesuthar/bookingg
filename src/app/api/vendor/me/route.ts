@@ -6,7 +6,7 @@ import { asyncHandler } from '@/utils/asyncHandler';
 import { NextResponse } from 'next/server';
 
 export const GET = asyncHandler(async (req: Request) => {
-  const users = await prisma.user.findMany();
+  const users = await prisma.vendor.findMany();
   return Response.json(users);
 })
 

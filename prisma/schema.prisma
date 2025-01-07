@@ -38,7 +38,8 @@ model Vendor {
   providers               Provider[]
   schedules               Schedule[]                     @relation("VendorSchedules")
   services                Service[]
-  vendorAdmins            VendorAdmin[]
+  vendorAdminId           String                         @unique @db.Uuid()
+  vendorAdmins            VendorAdmin                    @relation(fields: [vendorAdminId], references: [id])
   bank                    VendorBank?
   design                  VendorDesign?
   notificationPreferences VendorNotificationPreference[]
@@ -49,8 +50,8 @@ model Vendor {
 model Schedule {
   id         Int          @id @default(autoincrement())
   type       ScheduleType
-  vendorId   String @db.Uuid
-  providerId String? @db.Uuid
+  vendorId   String       @db.Uuid
+  providerId String?      @db.Uuid
   day        Day?
   startDate  DateTime?
   endDate    DateTime?
@@ -73,7 +74,7 @@ model Slot {
 
 model VendorNotificationPreference {
   id       Int     @id @default(autoincrement())
-  vendorId String @db.Uuid()
+  vendorId String  @db.Uuid()
   channel  Channel
   isActive Boolean
   dest     String
@@ -98,14 +99,14 @@ model Appointment {
   isRescheduled      Boolean
   paymentStatus      String
   pId                Int                @unique @default(autoincrement())
-  providerId         String @db.Uuid
+  providerId         String             @db.Uuid
   refundStatus       String
-  serviceId          String @db.Uuid
+  serviceId          String             @db.Uuid
   status             String
   txnId              String
   updatedAt          DateTime           @updatedAt
-  userId             String @db.Uuid
-  vendorId           String @db.Uuid
+  userId             String             @db.Uuid
+  vendorId           String             @db.Uuid
   provider           Provider           @relation(fields: [providerId], references: [id])
   service            Service            @relation(fields: [serviceId], references: [id])
   user               User               @relation(fields: [userId], references: [id])
@@ -125,7 +126,7 @@ model AppointmentRefund {
 model Service {
   id               String        @id @default(uuid()) @db.Uuid
   name             String
-  vendorId         String @db.Uuid
+  vendorId         String        @db.Uuid
   appointmentPrice Int
   bookingPrice     Int
   description      String
@@ -145,7 +146,7 @@ model Question {
   placeHolder String
   required    Boolean
   type        String
-  serviceId   String @db.Uuid()
+  serviceId   String  @db.Uuid()
   service     Service @relation(fields: [serviceId], references: [id])
 }
 
@@ -153,7 +154,7 @@ model Transaction {
   id             String      @id @default(uuid()) @db.Uuid
   amount         Float
   date           DateTime
-  appointmentId  String      @unique  @db.Uuid
+  appointmentId  String      @unique @db.Uuid
   bankRefNum     String
   cardType       String
   easepayid      String
@@ -163,7 +164,7 @@ model Transaction {
   netAmountDebit String
   status         String
   txnId          String
-  userId         String @db.Uuid
+  userId         String      @db.Uuid
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   appointment    Appointment @relation(fields: [appointmentId], references: [id])
@@ -187,7 +188,7 @@ model VendorPayment {
 
 model Provider {
   id                        String               @id @default(uuid()) @db.Uuid
-  vendorId                  String @db.Uuid
+  vendorId                  String               @db.Uuid
   name                      String
   pId                       Int                  @unique @default(autoincrement())
   slug                      String
@@ -206,14 +207,14 @@ model Provider {
 
 model ProviderSpeciality {
   id         Int      @id @default(autoincrement())
-  providerId String @db.Uuid
+  providerId String   @db.Uuid
   title      String
   provider   Provider @relation(fields: [providerId], references: [id])
 }
 
 model VendorSocialLink {
   id       String          @id @default(uuid()) @db.Uuid
-  vendorId String @db.Uuid
+  vendorId String          @db.Uuid
   platform SocialPlatforms
   url      String
   vendor   Vendor          @relation(fields: [vendorId], references: [id])
@@ -243,13 +244,12 @@ model VendorDesign {
 
 model VendorAdmin {
   id             String  @id @default(uuid()) @db.Uuid
-  vendorId       String @db.Uuid
   name           String
   email          String
   password       String  @default(uuid())
   isBlocked      Boolean @default(false)
   blockingReason String  @default("")
-  vendor         Vendor  @relation(fields: [vendorId], references: [id])
+  vendor         Vendor?
 }
 
 enum ScheduleType {
