@@ -76,8 +76,8 @@ model VendorNotificationPreference {
   id       Int     @id @default(autoincrement())
   vendorId String  @db.Uuid()
   channel  Channel
-  isActive Boolean
-  dest     String
+  isAllowed Boolean
+  destination     String
   vendor   Vendor  @relation(fields: [vendorId], references: [id])
 }
 
