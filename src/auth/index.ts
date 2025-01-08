@@ -11,6 +11,7 @@ const adapter = PrismaAdapter(prisma);
 
 export const authOptions: NextAuthOptions = {
   adapter: adapter,
+  secret:process.env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt'
   },
@@ -26,47 +27,47 @@ export const authOptions: NextAuthOptions = {
       //   },
       // }
     }),
-    // CredentialsProvider({
-    //   name: 'Sign in',
-    //   credentials: {
-    //     email: {
-    //       label: 'Email',
-    //       type: 'email',
-    //       placeholder: 'hello@example.com'
-    //     },
-    //     password: { label: 'Password', type: 'password' }
-    //   },
-    //   async authorize(credentials) {
-    //     if (!credentials?.email || !credentials.password) {
-    //       return null
-    //     }
+    CredentialsProvider({
+      name: 'Sign in',
+      credentials: {
+        email: {
+          label: 'Email',
+          type: 'email',
+          placeholder: 'hello@example.com'
+        },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials.password) {
+          return null
+        }
 
-    //     const user = await prisma.user.findUnique({
-    //       where: {
-    //         email: credentials.email
-    //       }
-    //     })
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email
+          }
+        })
 
-    //     if (!user) {
-    //       return null
-    //     }
+        if (!user) {
+          return null
+        }
 
-    //     const isPasswordValid = await compare(
-    //       credentials.password,
-    //       user.password || "n"
-    //     )
+        const isPasswordValid = await compare(
+          credentials.password,
+          user.password || "n"
+        )
 
-    //     if (!isPasswordValid) {
-    //       return null
-    //     }
+        if (!isPasswordValid) {
+          return null
+        }
 
-    //     return {
-    //       id: user.id + '',
-    //       email: user.email,
-    //       name: user.name,
-    //     }
-    //   }
-    // }),
+        return {
+          id: user.id + '',
+          email: user.email,
+          name: user.name,
+        }
+      }
+    }),
 
   ],
   callbacks: {
