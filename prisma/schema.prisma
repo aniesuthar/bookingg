@@ -9,7 +9,7 @@ datasource db {
 }
 
 model Vendor {
-  id                      String                         @id @default(uuid()) @db.Uuid()
+  id                      String                         @id @default(cuid()) @db.Uuid()
   pId                     Int                            @unique @default(autoincrement())
   name                    String
   bio                     String
@@ -39,7 +39,7 @@ model Vendor {
   schedules               Schedule[]                     @relation("VendorSchedules")
   services                Service[]
   vendorAdminId           String                         @unique @db.Uuid()
-  vendorAdmins            VendorAdmin                    @relation(fields: [vendorAdminId], references: [id])
+  vendorAdmin             User                    @relation(fields: [vendorAdminId], references: [id])
   bank                    VendorBank?
   design                  VendorDesign?
   notificationPreferences VendorNotificationPreference[]
@@ -82,7 +82,7 @@ model VendorNotificationPreference {
 }
 
 model Appointment {
-  id                 String             @id @default(uuid()) @db.Uuid
+  id                 String             @id @default(cuid()) @db.Uuid
   amount             Float
   bankRef            String
   cancellationReason String?
@@ -109,7 +109,7 @@ model Appointment {
   vendorId           String             @db.Uuid
   provider           Provider           @relation(fields: [providerId], references: [id])
   service            Service            @relation(fields: [serviceId], references: [id])
-  user               User               @relation(fields: [userId], references: [id])
+  user               FrontUser          @relation(fields: [userId], references: [id])
   vendor             Vendor             @relation(fields: [vendorId], references: [id])
   refund             AppointmentRefund?
   transaction        Transaction?
@@ -124,7 +124,7 @@ model AppointmentRefund {
 }
 
 model Service {
-  id               String        @id @default(uuid()) @db.Uuid
+  id               String        @id @default(cuid()) @db.Uuid
   name             String
   vendorId         String        @db.Uuid
   appointmentPrice Int
@@ -151,7 +151,7 @@ model Question {
 }
 
 model Transaction {
-  id             String      @id @default(uuid()) @db.Uuid
+  id             String      @id @default(cuid()) @db.Uuid
   amount         Float
   date           DateTime
   appointmentId  String      @unique @db.Uuid
@@ -168,11 +168,11 @@ model Transaction {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   appointment    Appointment @relation(fields: [appointmentId], references: [id])
-  user           User        @relation(fields: [userId], references: [id])
+  user           FrontUser        @relation(fields: [userId], references: [id])
 }
 
-model User {
-  id           String        @id @default(uuid()) @db.Uuid
+model FrontUser {
+  id           String        @id @default(cuid()) @db.Uuid
   name         String
   email        String        @unique
   phone        String        @unique
@@ -181,13 +181,13 @@ model User {
 }
 
 model VendorPayment {
-  id       String @id @default(uuid()) @db.Uuid
+  id       String @id @default(cuid()) @db.Uuid
   vendorId String @db.Uuid
   vendor   Vendor @relation(fields: [vendorId], references: [id])
 }
 
 model Provider {
-  id                        String               @id @default(uuid()) @db.Uuid
+  id                        String               @id @default(cuid()) @db.Uuid
   vendorId                  String               @db.Uuid
   name                      String
   pId                       Int                  @unique @default(autoincrement())
@@ -213,7 +213,7 @@ model ProviderSpeciality {
 }
 
 model VendorSocialLink {
-  id       String          @id @default(uuid()) @db.Uuid
+  id       String          @id @default(cuid()) @db.Uuid
   vendorId String          @db.Uuid
   platform SocialPlatforms
   url      String
@@ -223,7 +223,7 @@ model VendorSocialLink {
 }
 
 model VendorBank {
-  id            String @id @default(uuid()) @db.Uuid
+  id            String @id @default(cuid()) @db.Uuid
   vendorId      String @unique @db.Uuid
   accountNumber String
   bankName      String
@@ -233,7 +233,7 @@ model VendorBank {
 }
 
 model VendorDesign {
-  id              String @id @default(uuid()) @db.Uuid
+  id              String @id @default(cuid()) @db.Uuid
   vendorId        String @unique @db.Uuid
   accentColor     String
   backgroundColor String
@@ -242,16 +242,78 @@ model VendorDesign {
   vendor          Vendor @relation(fields: [vendorId], references: [id])
 }
 
-model VendorAdmin {
-  id             String  @id @default(uuid()) @db.Uuid
-  name           String
-  email          String
-  password       String  @default(uuid())
-  isBlocked      Boolean @default(false)
-  blockingReason String  @default("")
-  vendor         Vendor?
+model User {
+  id                       String                    @id @default(uuid()) @db.Uuid
+  name                     String
+  email                    String                    @unique
+  isBlocked                Boolean                   @default(false)
+  blockingReason           String?                   @default("")
+  vendor                   Vendor?
+  emailVerified            DateTime?
+  image                    String?
+  password                 String?
+  accounts                 Account[]
+  sessions                 Session[]
+  Authenticator            Authenticator[]
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @default(now()) @updatedAt
+
 }
 
+model Account {
+  userId            String @db.Uuid
+  type              String 
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([provider, providerAccountId])
+}
+ 
+model Session {
+  sessionToken String   @unique
+  userId       String @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+ 
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@id([identifier, token])
+}
+ 
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String @db.Uuid
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([userId, credentialID])
+}
 enum ScheduleType {
   WEEKLY
   FLEXIBLE

@@ -1,13 +1,17 @@
 import React from 'react'
 import AppointmentBookingWidget from "@/components/AppointmentBook";
+
 import Image from "next/image";
+import { signIn, signOut } from 'next-auth/react'
+import { LoginButton } from '@/components/googleSignIn';
 
 export default function Home() {
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
         <AppointmentBookingWidget hospitalId="ABDfaf"/>
-     </main>
+        <LoginButton/>
+        </main>
     </div>
   );
 }

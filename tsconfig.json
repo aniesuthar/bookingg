@@ -80,7 +80,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "next.config.js",
-    "public/widget.js"
+    "public/widget.js",
+    "environment.d.ts"
   ],
   "exclude": [
     "node_modules"

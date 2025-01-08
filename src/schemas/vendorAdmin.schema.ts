@@ -1,11 +1,8 @@
 import { z } from "zod";
 
 export const createUserSchema = z.object({
-    name: z.string().min(1, "name is required").trim(),
-    email:z.string().email(),
-    isBlocked:z.boolean().default(false),
-    password : z.string(),
-    image:z.string().default("some"),
+    name: z.string().min(1, "Doctor name is required").trim(),
+    email:z.string().email()
 
   });
   

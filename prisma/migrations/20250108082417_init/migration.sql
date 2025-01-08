@@ -1,12 +1,3 @@
-/*
-  Warnings:
-
-  - The primary key for the `User` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the `Post` table. If the table is not empty, all the data it contains will be lost.
-  - A unique constraint covering the columns `[phone]` on the table `User` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `phone` to the `User` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "ScheduleType" AS ENUM ('WEEKLY', 'FLEXIBLE');
 
@@ -22,29 +13,15 @@ CREATE TYPE "Day" AS ENUM ('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT');
 -- CreateEnum
 CREATE TYPE "SocialPlatforms" AS ENUM ('FB', 'INSTA');
 
--- DropForeignKey
-ALTER TABLE "Post" DROP CONSTRAINT "Post_authorId_fkey";
-
--- AlterTable
-ALTER TABLE "User" DROP CONSTRAINT "User_pkey",
-ADD COLUMN     "phone" TEXT NOT NULL,
-ALTER COLUMN "id" DROP DEFAULT,
-ALTER COLUMN "id" SET DATA TYPE TEXT,
-ADD CONSTRAINT "User_pkey" PRIMARY KEY ("id");
-DROP SEQUENCE "User_id_seq";
-
--- DropTable
-DROP TABLE "Post";
-
 -- CreateTable
 CREATE TABLE "Vendor" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "pId" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "bio" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
-    "phoneAlt" TEXT NOT NULL,
+    "phoneAlt" TEXT,
     "addressCity" TEXT,
     "addressPinCode" INTEGER,
     "addressState" TEXT,
@@ -63,6 +40,7 @@ CREATE TABLE "Vendor" (
     "showBusinessDetails" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "vendorAdminId" UUID NOT NULL,
 
     CONSTRAINT "Vendor_pkey" PRIMARY KEY ("id")
 );
@@ -71,8 +49,8 @@ CREATE TABLE "Vendor" (
 CREATE TABLE "Schedule" (
     "id" SERIAL NOT NULL,
     "type" "ScheduleType" NOT NULL,
-    "vendorId" TEXT NOT NULL,
-    "providerId" TEXT,
+    "vendorId" UUID NOT NULL,
+    "providerId" UUID,
     "day" "Day",
     "startDate" TIMESTAMP(3),
     "endDate" TIMESTAMP(3),
@@ -94,7 +72,7 @@ CREATE TABLE "Slot" (
 -- CreateTable
 CREATE TABLE "VendorNotificationPreference" (
     "id" SERIAL NOT NULL,
-    "vendorId" TEXT NOT NULL,
+    "vendorId" UUID NOT NULL,
     "channel" "Channel" NOT NULL,
     "isActive" BOOLEAN NOT NULL,
     "dest" TEXT NOT NULL,
@@ -104,7 +82,7 @@ CREATE TABLE "VendorNotificationPreference" (
 
 -- CreateTable
 CREATE TABLE "Appointment" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "bankRef" TEXT NOT NULL,
     "cancellationReason" TEXT,
@@ -120,15 +98,15 @@ CREATE TABLE "Appointment" (
     "guestCount" INTEGER NOT NULL,
     "isRescheduled" BOOLEAN NOT NULL,
     "paymentStatus" TEXT NOT NULL,
-    "pId" TEXT NOT NULL,
-    "providerId" TEXT NOT NULL,
+    "pId" SERIAL NOT NULL,
+    "providerId" UUID NOT NULL,
     "refundStatus" TEXT NOT NULL,
-    "serviceId" TEXT NOT NULL,
+    "serviceId" UUID NOT NULL,
     "status" TEXT NOT NULL,
     "txnId" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" TEXT NOT NULL,
-    "vendorId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "vendorId" UUID NOT NULL,
 
     CONSTRAINT "Appointment_pkey" PRIMARY KEY ("id")
 );
@@ -138,16 +116,16 @@ CREATE TABLE "AppointmentRefund" (
     "id" SERIAL NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "refundDate" TIMESTAMP(3) NOT NULL,
-    "appointmentId" TEXT NOT NULL,
+    "appointmentId" UUID NOT NULL,
 
     CONSTRAINT "AppointmentRefund_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Service" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
-    "vendorId" TEXT NOT NULL,
+    "vendorId" UUID NOT NULL,
     "appointmentPrice" INTEGER NOT NULL,
     "bookingPrice" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
@@ -166,17 +144,17 @@ CREATE TABLE "Question" (
     "placeHolder" TEXT NOT NULL,
     "required" BOOLEAN NOT NULL,
     "type" TEXT NOT NULL,
-    "serviceId" TEXT NOT NULL,
+    "serviceId" UUID NOT NULL,
 
     CONSTRAINT "Question_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Transaction" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
-    "appointmentId" TEXT NOT NULL,
+    "appointmentId" UUID NOT NULL,
     "bankRefNum" TEXT NOT NULL,
     "cardType" TEXT NOT NULL,
     "easepayid" TEXT NOT NULL,
@@ -186,7 +164,7 @@ CREATE TABLE "Transaction" (
     "netAmountDebit" TEXT NOT NULL,
     "status" TEXT NOT NULL,
     "txnId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -194,25 +172,36 @@ CREATE TABLE "Transaction" (
 );
 
 -- CreateTable
+CREATE TABLE "FrontUser" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+
+    CONSTRAINT "FrontUser_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "VendorPayment" (
-    "id" TEXT NOT NULL,
-    "vendorId" TEXT NOT NULL,
+    "id" UUID NOT NULL,
+    "vendorId" UUID NOT NULL,
 
     CONSTRAINT "VendorPayment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Provider" (
-    "id" TEXT NOT NULL,
-    "vendorId" TEXT NOT NULL,
+    "id" UUID NOT NULL,
+    "vendorId" UUID NOT NULL,
     "name" TEXT NOT NULL,
-    "pId" INTEGER NOT NULL,
-    "scheduleDefaultHours" TEXT NOT NULL,
+    "pId" SERIAL NOT NULL,
     "slug" TEXT NOT NULL,
     "aggregatedAppointments" INTEGER NOT NULL DEFAULT 0,
     "aggregatedRating" DOUBLE PRECISION NOT NULL DEFAULT 4,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "scheduleDefaultHoursEnd" INTEGER NOT NULL,
+    "scheduleDefaultHoursStart" INTEGER NOT NULL,
 
     CONSTRAINT "Provider_pkey" PRIMARY KEY ("id")
 );
@@ -220,7 +209,7 @@ CREATE TABLE "Provider" (
 -- CreateTable
 CREATE TABLE "ProviderSpeciality" (
     "id" SERIAL NOT NULL,
-    "providerId" TEXT NOT NULL,
+    "providerId" UUID NOT NULL,
     "title" TEXT NOT NULL,
 
     CONSTRAINT "ProviderSpeciality_pkey" PRIMARY KEY ("id")
@@ -228,8 +217,8 @@ CREATE TABLE "ProviderSpeciality" (
 
 -- CreateTable
 CREATE TABLE "VendorSocialLink" (
-    "id" TEXT NOT NULL,
-    "vendorId" TEXT NOT NULL,
+    "id" UUID NOT NULL,
+    "vendorId" UUID NOT NULL,
     "platform" "SocialPlatforms" NOT NULL,
     "url" TEXT NOT NULL,
 
@@ -238,8 +227,8 @@ CREATE TABLE "VendorSocialLink" (
 
 -- CreateTable
 CREATE TABLE "VendorBank" (
-    "id" TEXT NOT NULL,
-    "vendorId" TEXT NOT NULL,
+    "id" UUID NOT NULL,
+    "vendorId" UUID NOT NULL,
     "accountNumber" TEXT NOT NULL,
     "bankName" TEXT NOT NULL,
     "holderName" TEXT NOT NULL,
@@ -250,8 +239,8 @@ CREATE TABLE "VendorBank" (
 
 -- CreateTable
 CREATE TABLE "VendorDesign" (
-    "id" TEXT NOT NULL,
-    "vendorId" TEXT NOT NULL,
+    "id" UUID NOT NULL,
+    "vendorId" UUID NOT NULL,
     "accentColor" TEXT NOT NULL,
     "backgroundColor" TEXT NOT NULL,
     "font" TEXT NOT NULL,
@@ -261,22 +250,76 @@ CREATE TABLE "VendorDesign" (
 );
 
 -- CreateTable
-CREATE TABLE "VendorAdmin" (
-    "id" TEXT NOT NULL,
-    "vendorId" TEXT NOT NULL,
+CREATE TABLE "User" (
+    "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
     "isBlocked" BOOLEAN NOT NULL DEFAULT false,
-    "blockingReason" TEXT NOT NULL DEFAULT '',
+    "blockingReason" TEXT DEFAULT '',
+    "emailVerified" TIMESTAMP(3),
+    "image" TEXT,
+    "password" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "VendorAdmin_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Account" (
+    "userId" UUID NOT NULL,
+    "type" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "refresh_token" TEXT,
+    "access_token" TEXT,
+    "expires_at" INTEGER,
+    "token_type" TEXT,
+    "scope" TEXT,
+    "id_token" TEXT,
+    "session_state" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("provider","providerAccountId")
+);
+
+-- CreateTable
+CREATE TABLE "Session" (
+    "sessionToken" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "VerificationToken" (
+    "identifier" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "VerificationToken_pkey" PRIMARY KEY ("identifier","token")
+);
+
+-- CreateTable
+CREATE TABLE "Authenticator" (
+    "credentialID" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "credentialPublicKey" TEXT NOT NULL,
+    "counter" INTEGER NOT NULL,
+    "credentialDeviceType" TEXT NOT NULL,
+    "credentialBackedUp" BOOLEAN NOT NULL,
+    "transports" TEXT,
+
+    CONSTRAINT "Authenticator_pkey" PRIMARY KEY ("userId","credentialID")
 );
 
 -- CreateTable
 CREATE TABLE "_ProviderToService" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
+    "A" UUID NOT NULL,
+    "B" UUID NOT NULL,
 
     CONSTRAINT "_ProviderToService_AB_pkey" PRIMARY KEY ("A","B")
 );
@@ -291,10 +334,16 @@ CREATE UNIQUE INDEX "Vendor_email_key" ON "Vendor"("email");
 CREATE UNIQUE INDEX "Vendor_phone_key" ON "Vendor"("phone");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Vendor_vendorAdminId_key" ON "Vendor"("vendorAdminId");
+
+-- CreateIndex
 CREATE INDEX "Schedule_vendorId_type_day_idx" ON "Schedule"("vendorId", "type", "day");
 
 -- CreateIndex
 CREATE INDEX "Schedule_providerId_type_day_idx" ON "Schedule"("providerId", "type", "day");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Appointment_pId_key" ON "Appointment"("pId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AppointmentRefund_appointmentId_key" ON "AppointmentRefund"("appointmentId");
@@ -306,6 +355,15 @@ CREATE UNIQUE INDEX "Service_pId_key" ON "Service"("pId");
 CREATE UNIQUE INDEX "Transaction_appointmentId_key" ON "Transaction"("appointmentId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "FrontUser_email_key" ON "FrontUser"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "FrontUser_phone_key" ON "FrontUser"("phone");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Provider_pId_key" ON "Provider"("pId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "VendorSocialLink_platform_url_key" ON "VendorSocialLink"("platform", "url");
 
 -- CreateIndex
@@ -315,16 +373,25 @@ CREATE UNIQUE INDEX "VendorBank_vendorId_key" ON "VendorBank"("vendorId");
 CREATE UNIQUE INDEX "VendorDesign_vendorId_key" ON "VendorDesign"("vendorId");
 
 -- CreateIndex
-CREATE INDEX "_ProviderToService_B_index" ON "_ProviderToService"("B");
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
+CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Authenticator_credentialID_key" ON "Authenticator"("credentialID");
+
+-- CreateIndex
+CREATE INDEX "_ProviderToService_B_index" ON "_ProviderToService"("B");
 
 -- AddForeignKey
-ALTER TABLE "Schedule" ADD CONSTRAINT "Schedule_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Vendor" ADD CONSTRAINT "Vendor_vendorAdminId_fkey" FOREIGN KEY ("vendorAdminId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Schedule" ADD CONSTRAINT "Schedule_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "Provider"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Schedule" ADD CONSTRAINT "Schedule_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Slot" ADD CONSTRAINT "Slot_scheduleId_fkey" FOREIGN KEY ("scheduleId") REFERENCES "Schedule"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -339,7 +406,7 @@ ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_providerId_fkey" FOREIGN K
 ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_serviceId_fkey" FOREIGN KEY ("serviceId") REFERENCES "Service"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "FrontUser"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -357,7 +424,7 @@ ALTER TABLE "Question" ADD CONSTRAINT "Question_serviceId_fkey" FOREIGN KEY ("se
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "Appointment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "FrontUser"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "VendorPayment" ADD CONSTRAINT "VendorPayment_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -378,7 +445,13 @@ ALTER TABLE "VendorBank" ADD CONSTRAINT "VendorBank_vendorId_fkey" FOREIGN KEY (
 ALTER TABLE "VendorDesign" ADD CONSTRAINT "VendorDesign_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "VendorAdmin" ADD CONSTRAINT "VendorAdmin_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Authenticator" ADD CONSTRAINT "Authenticator_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ProviderToService" ADD CONSTRAINT "_ProviderToService_A_fkey" FOREIGN KEY ("A") REFERENCES "Provider"("id") ON DELETE CASCADE ON UPDATE CASCADE;
