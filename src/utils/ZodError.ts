@@ -12,7 +12,7 @@ const formatZodErrors = (error: ZodError): any[] => {
 // Function to handle Zod errors and convert them to ApiError format
 const handleZodError = (error: ZodError): ApiError => {
   const formattedErrors = formatZodErrors(error);
-  return new ApiError(400, "Validation failed", formattedErrors);
+  return new ApiError(400, "Zod Validation failed", false,formattedErrors);
 };
 
 export { handleZodError };

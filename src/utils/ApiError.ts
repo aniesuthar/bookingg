@@ -2,12 +2,14 @@ class ApiError extends Error {
   public statusCode: number;
   public data: null;
   public success: boolean;
+  public unauthorised : boolean;
   public errors: any[];
   public message: string;
 
   constructor(
     statusCode: number,
     message: string = "Something went wrong",
+    unauthorised:boolean = false,
     errors: any[] = [],
     stack?: string
   ) {
@@ -17,6 +19,7 @@ class ApiError extends Error {
     this.data = null;
     this.success = false;
     this.errors = errors;
+    this.unauthorised = unauthorised
 
     if (stack) {
       this.stack = stack;

@@ -26,7 +26,7 @@ const handlePrismaError = (error: any) => {
           statusCode: 400,
           success: false,
           message: "A database error occurred.",
-          errors: [],
+          errors: error,
         };
     }
   } else if (error instanceof Prisma.PrismaClientValidationError) {
